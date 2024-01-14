@@ -1,4 +1,4 @@
-module chat
+module news
 
 go 1.18
 

@@ -86,5 +86,6 @@ func (c *Client) FetchEverything(query string, page string) (*Results, error) {
 	}
 
 	// Response body decoding using Unmarshal into the Result struct
-	return &Results{}, json.Unmarshal(body, &Results{})
+	results := &Results{}
+	return results, json.Unmarshal(body, results)
 }

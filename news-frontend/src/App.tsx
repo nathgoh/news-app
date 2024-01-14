@@ -1,18 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { SearchResults } from './types/News'
 import './App.css'
+import axios from 'axios'
 
 function App() {
   const [searchInput, setSearchInput] = useState<string>("")
+  const [searchResults, setSearchResults] = useState<SearchResults>()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value)
   }
   
+  const handleOnSubmit = () => {
+    const url = "http://localhost:8080/search?topic=" + searchInput 
+    axios.get(url).then((response) => {
+      setSearchResults(response.data as SearchResults)
+    })
+  }
 
   return (
     <>
       <div className="search-container">
-        <form id="search-form" action="search" method="GET">
+        <form id="search-form" onSubmit={handleOnSubmit} action="search" method="GET">
           <input 
             id="search-bar"
             name="topic"
@@ -24,26 +33,9 @@ function App() {
           <button id="search-button" type="submit"> Search </button>
         </form>
       </div>
-      {/* <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="search-results"> 
+        {searchResults}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p> */}
     </>
   )
 }

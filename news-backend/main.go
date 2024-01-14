@@ -1,17 +1,25 @@
 package main
 
 import (
-	news "chat/api"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
+	news "news/api"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+type Search struct {
+	Query      string
+	NextPage   int
+	TotalPages int
+	Results    *news.Results
+}
 
 func router(newsApi *news.Client) {
 	router := gin.Default()
@@ -48,7 +56,23 @@ func newsHandler(newsApi *news.Client) gin.HandlerFunc {
 			return
 		}
 
-		fmt.Printf("%+v", results)
+		nextPage, err := strconv.Atoi(page)
+		if err != nil {
+			http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		// Instance of Search struct created with relevant fields
+		search := &Search{
+			searchQuery,
+			nextPage,
+			int(results.TotalResults / newsApi.PageSize),
+			results,
+		}
+
+		fmt.Printf("%v", search)
+
+		c.JSON(http.StatusOK, search)
 	}
 }
 
