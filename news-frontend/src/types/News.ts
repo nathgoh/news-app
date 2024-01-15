@@ -1,21 +1,28 @@
 export declare interface Source {
-  ID:   string;
-	Name: string;
+  id:   string;
+	name: string;
 }
 
 export declare interface Article {
-  Source: Source;
-	Author:      string;  
-	Title:      string;   
-	Description: string;  
-	URL:         string; 
-	URLToImage:  string;   
-	PublishedAt: string;
-	Content:     string;
+  source:				Source;
+	author:     	string;  
+	title:       	string;   
+	description: 	string;  
+	url:         	string; 
+	urkToImage:  	string;   
+	publishedAt: 	string;
+	content:     	string;
+}
+
+export declare interface Results {
+  status:       string;  
+	totalResults: number;      
+	articles:     Article[];
 }
 
 export declare interface SearchResults {
-  Status:       string;  
-	TotalResults: number;      
-	Articles:     Article[];
+	Query: 			string;
+	NextPage: 	number;
+	TotalPages: number;
+	Results: 		Results;
 }

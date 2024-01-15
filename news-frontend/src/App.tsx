@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { SearchResults } from './types/News'
 import './App.css'
 import axios from 'axios'
@@ -11,17 +11,20 @@ function App() {
     setSearchInput(e.target.value)
   }
   
-  const handleOnSubmit = () => {
+  const handleOnClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const url = "http://localhost:8080/search?topic=" + searchInput 
     axios.get(url).then((response) => {
       setSearchResults(response.data as SearchResults)
-    })
+    })  
+    e.preventDefault()
   }
+
+  console.log(searchResults?.Results.articles)
 
   return (
     <>
       <div className="search-container">
-        <form id="search-form" onSubmit={handleOnSubmit} action="search" method="GET">
+        <form id="search-form" action="search" method="GET">
           <input 
             id="search-bar"
             name="topic"
@@ -30,11 +33,13 @@ function App() {
             value={searchInput}
             onChange={handleChange}
           />
-          <button id="search-button" type="submit"> Search </button>
+          <button id="search-button" type="submit" onClick={handleOnClick}> Search </button>
         </form>
       </div>
       <div className="search-results"> 
-        {searchResults}
+        {searchResults?.Results.articles && searchResults.Results.articles.map((article, idx) => (
+          <p key={`article-${idx}`}> {article.title} </p>
+        ))}
       </div>
     </>
   )

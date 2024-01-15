@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"net/url"
 	news "news/api"
@@ -35,8 +35,14 @@ func router(newsApi *news.Client) {
 	router.Run(":" + os.Getenv("PORT"))
 }
 
+func enableCors(w gin.ResponseWriter) {
+	(w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 func newsHandler(newsApi *news.Client) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		enableCors(c.Writer)
+
 		u, err := url.Parse(c.Request.URL.String())
 		if err != nil {
 			http.Error(c.Writer, err.Error(), http.StatusInternalServerError)
@@ -62,15 +68,13 @@ func newsHandler(newsApi *news.Client) gin.HandlerFunc {
 			return
 		}
 
-		// Instance of Search struct created with relevant fields
+		// Instance of Search struct populated with relevant fields
 		search := &Search{
 			searchQuery,
 			nextPage,
-			int(results.TotalResults / newsApi.PageSize),
+			int(math.Ceil(float64(results.TotalResults) / float64(newsApi.PageSize))),
 			results,
 		}
-
-		fmt.Printf("%v", search)
 
 		c.JSON(http.StatusOK, search)
 	}
@@ -82,9 +86,15 @@ func main() {
 		log.Println("Error loading .env file")
 	}
 
-	myClient := &http.Client{Timeout: 10 * time.Second}
-	newsApi := news.NewClient(myClient, os.Getenv("NEWS_API_KEY"), 20)
-	router(newsApi)
+	// tr := &http.Transport{
+	// 	MaxIdleConns:       10,
+	// 	IdleConnTimeout:    30 * time.Second,
+	// 	WriteBufferSize: 128 * 1024,
 
-	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
+	// }
+	// client := &http.Client{Transport: tr}
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	newsApi := news.NewClient(client, os.Getenv("NEWS_API_KEY"), 20)
+	router(newsApi)
 }
