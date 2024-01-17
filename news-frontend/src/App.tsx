@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { SearchResults } from './types/News'
+import { Article, Results, SearchResults } from './types/News'
 import './App.css'
 import axios from 'axios'
 
@@ -13,13 +13,34 @@ function App() {
   
   const handleOnClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const url = "http://localhost:8080/search?topic=" + searchInput 
-    axios.get(url).then((response) => {
-      setSearchResults(response.data as SearchResults)
+    axios.get(url).then((response) => {  
+      setSearchResults(processSearchResults(response.data))
+      
     })  
     e.preventDefault()
   }
 
-  console.log(searchResults?.Results.articles)
+  const processSearchResults = (news: SearchResults) => {
+    const processedArticles: Article[] = [];
+    news.Results.articles.forEach((article) => {
+      if (article.title !== "[Removed]") {
+        processedArticles.push(article)
+      }
+    }) 
+
+    const updatedResults = {} as Results
+    updatedResults.status = news.Results.status
+    updatedResults.articles = processedArticles
+    updatedResults.totalResults = news.Results.totalResults
+
+    const updatedSearchResults = {} as SearchResults
+    updatedSearchResults.NextPage = news.NextPage
+    updatedSearchResults.Query = news.Query
+    updatedSearchResults.Results = updatedResults
+    updatedSearchResults.TotalPages = news.TotalPages
+
+    return updatedSearchResults
+  }
 
   return (
     <>
@@ -36,11 +57,19 @@ function App() {
           <button id="search-button" type="submit" onClick={handleOnClick}> Search </button>
         </form>
       </div>
-      <div className="search-results"> 
+      <ul className="search-results"> 
         {searchResults?.Results.articles && searchResults.Results.articles.map((article, idx) => (
-          <p key={`article-${idx}`}> {article.title} </p>
+          <ul className="news-articles" key={`article-${idx}`}>
+            <div>
+              <a target="_blank" rel="noreferrer noopener" key={`url-${idx}`} href={article.url}>
+                <h3 key={`title-${idx}`}>{article.title}</h3>
+              </a>
+              <p key={`description-${idx}`}>{article.description}</p>            
+            </div>
+            <img key={`image-${idx}`} src={article.urlToImage}/>
+          </ul>
         ))}
-      </div>
+      </ul>
     </>
   )
 }
